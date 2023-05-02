@@ -85,6 +85,7 @@ main( int argc, char *argv[ ] )
 	return 1;
 #endif
 
+	omp_init_lock(&Lock);
 	// this array is here to be sure all the pops actually happened:
 	for( int i = 0; i < NUMN; i++ )
 	{
