@@ -11,8 +11,10 @@
 #endif
 
 #ifndef USE_MUTEX
-#define USE_MUTEX		true
+#define USE_MUTEX	true	
 #endif
+
+#define IF_MUTEX(TEXT) {if (USE_MUTEX) { TEXT; } else {}}
 
 int		Stack[NUMN];
 volatile int	StackPtr = -1;
@@ -31,27 +33,33 @@ omp_lock_t	Lock;
 void
 Push( int n )
 {
+	IF_MUTEX(omp_set_lock(&Lock));
 	StackPtr++;
 	Stack[StackPtr] = n;
+	IF_MUTEX(omp_unset_lock(&Lock));
 }
 
 
 int
 Pop( )
 {
+	IF_MUTEX(omp_set_lock(&Lock));
 	// if the stack is empty, give the Push( ) function a chance to put something on the stack:
 	int t = 0;
 	while( StackPtr < 0  &&  t < TIMEOUT )
 		t++;
 
 	// if there is nothing to pop, return;
-	if( StackPtr < 0 )
+	if( StackPtr < 0 ) {
+		IF_MUTEX(omp_unset_lock(&Lock));
 		return FAILED;
+	}
 
 	int n = Stack[StackPtr];
 	StackPtr--;
 
 	WasPopped[n] = true;
+	IF_MUTEX(omp_unset_lock(&Lock));
 	return n;
 }
 
