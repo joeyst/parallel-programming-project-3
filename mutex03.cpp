@@ -43,11 +43,12 @@ Push( int n )
 int
 Pop( )
 {
-	IF_MUTEX(omp_set_lock(&Lock));
 	// if the stack is empty, give the Push( ) function a chance to put something on the stack:
 	int t = 0;
-	while( StackPtr < 0  &&  t < TIMEOUT )
+	while( StackPtr < 0  &&  t < TIMEOUT)
 		t++;
+
+	IF_MUTEX(omp_set_lock(&Lock));
 
 	// if there is nothing to pop, return;
 	if( StackPtr < 0 ) {
@@ -128,7 +129,7 @@ main( int argc, char *argv[ ] )
 	if( USE_MUTEX )
 		useMutexString = (char *)" true";
 
-	fprintf( stderr, "NUMN = %6d , USE_MUTEX = %s , NumPopErrors = %5d = %6.2f%% , Elapsed time = %9.2lf microseconds\n",
+	fprintf( stderr, "%6d, %s, %5d, %6.2f%%, %9.2lf\n",
 		NUMN, useMutexString, NumPopErrors, 100.*(float)NumPopErrors/(float)NUMN, 1000000.*(time1-time0) );
 
 	return 0;
